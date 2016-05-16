@@ -6,6 +6,9 @@ ASMSOURCE=$(wildcard $(SRCDIR)/*.s)
 all:$(BUILDDIR)/out.a
 
 clean:
+	$(RM) $(BUILDDIR)/out.a
+	$(RM) $(BUILDDIR)/*.d
+	$(RM) $(BUILDDIR)/*.o
 
 $(BUILDDIR)/out.a:$(patsubst $(SRCDIR)/%,$(BUILDDIR)/%.o,$(CPPSOURCE) $(ASMSOURCE))
 	$(AR) rc $@ $^

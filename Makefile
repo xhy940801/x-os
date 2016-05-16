@@ -7,8 +7,8 @@ BUILDDIR=$(shell cd $(TBUILDDIR) && pwd)
 SRCDIR=$(shell cd $(TSRCDIR) && pwd)
 INCDIR=$(SRCDIR)/include
 BOOTMODULE=boot
-SUBMODULES=systemparams
-CFLAGS=-Wall -Werror -m32 -std=c++11 -nostartfiles -nostdlib -nodefaultlibs -static -I$(INCDIR) -I$(INCDIR)/stdc++
+SUBMODULES=systemparams vfs
+CFLAGS=-Wall -Werror -m32 -std=c++11 -nostartfiles -nostdlib -nodefaultlibs -static -I$(INCDIR)
 
 export CFLAGS
 export ASM
@@ -24,7 +24,8 @@ clean:
 	$(RM) $(BUILDDIR)/*.a
 	$(RM) $(BUILDDIR)/*.o
 	for name in `echo $(BOOTMODULE) $(SUBMODULES)`;do\
-		cd $(SRCDIR)/$${name} && $(MAKE) clean;\
+		cd $(SRCDIR)/$${name} && $(MAKE) clean \
+			BUILDDIR=$(BUILDDIR)/$${name}; \
 	done
 
 install:$(BUILDDIR)/$(NAME)
@@ -51,7 +52,7 @@ $(BUILDDIR)/system.bin:$(patsubst %, $(BUILDDIR)/lib%.a, $(SUBMODULES)) $(BUILDD
 $(BUILDDIR)/lib%.a:$(BUILDDIR)/%/out.a
 	cp $^ $@
 
-$(BUILDDIR)/%/out.a:
+$(BUILDDIR)/%/out.a:$(SRCDIR)/%/* $(INCDIR)/*
 	mkdir -p $(BUILDDIR)/$(patsubst $(BUILDDIR)/%/out.a,%,$@)
 	cd $(patsubst $(BUILDDIR)/%/out.a,%,$@) && \
 	$(MAKE) \
@@ -66,7 +67,7 @@ $(BUILDDIR)/main.o:$(SRCDIR)/main.cpp $(BUILDDIR)/main.d
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILDDIR)/main.d:$(SRCDIR)/main.cpp
-	@$(RM) $@;
+	@$(RM) $@
 	@$(CC) -MM $(CFLAGS) $< | sed 's/\($(patsubst %.c,%,$(notdir $<))\)\.o *: */obj\/\1.o dep\/\1.d:/' > $@
 
 ifneq ($(MAKECMDGOALS),clean)
