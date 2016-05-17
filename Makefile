@@ -7,8 +7,8 @@ BUILDDIR=$(shell cd $(TBUILDDIR) && pwd)
 SRCDIR=$(shell cd $(TSRCDIR) && pwd)
 INCDIR=$(SRCDIR)/include
 BOOTMODULE=boot
-SUBMODULES=systemparams vfs
-CFLAGS=-Wall -Werror -m32 -std=c++11 -nostartfiles -nostdlib -nodefaultlibs -static -I$(INCDIR)
+SUBMODULES=systemparams vfs tty0
+CFLAGS=-Wall -m32 -std=c++11 -nostartfiles -nostdlib -nodefaultlibs -static -fno-common -fno-use-cxa-atexit -fno-exceptions -fno-non-call-exceptions -fno-weak -fno-rtti -ffreestanding -I$(INCDIR)
 
 export CFLAGS
 export ASM
@@ -39,8 +39,8 @@ $(BUILDDIR)/boot.bin:$(BUILDDIR)/$(BOOTMODULE)/out.a
 	cp $^ $@
 
 $(BUILDDIR)/system.bin:$(patsubst %, $(BUILDDIR)/lib%.a, $(SUBMODULES)) $(BUILDDIR)/main.o $(BUILDDIR)/head.o
-	$(LD) --oformat=binary -m elf_i386 -M -x -e startup_32 --section-start .text=0xc0100000 \
-	-o $@ $(BUILDDIR)/head.o $(BUILDDIR)/main.o -L$(BUILDDIR) $(patsubst %,-l%,$(SUBMODULES)) |\
+	$(CC) $(CFLAGS) -Wl,--oformat=binary,-m,elf_i386,-M,-x,-e,startup_32,--section-start,.text=0xc0100000 -static \
+	-o $@ $(BUILDDIR)/head.o $(BUILDDIR)/main.o $(patsubst %,$(BUILDDIR)/%/*.o,$(SUBMODULES)) -lgcc |\
 	tee $(BUILDDIR)/os.symbols.origin |\
 	grep -E "(^\s+0x[0-9a-f]+\s+[a-zA-Z_]\S+$$)|(^\s*\.text\s+0x[0-9a-f]+\s+0x[0-9a-f]+\s+[a-zA-Z_]\S+$$)" |\
 	sed -r "s/^\s*\.text\s+(0x[0-9a-f]+)\s+0x[0-9a-f]+\s+([a-zA-Z_]\S+)$$/\1 \2/" |\

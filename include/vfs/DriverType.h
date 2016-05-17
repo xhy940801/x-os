@@ -2,6 +2,12 @@
 
 #include <cstdint>
 
+enum class MainDriverType : uint16_t
+{
+    HD      = 3,
+    TTY0    = 5
+};
+
 class DriverType
 {
     union
@@ -9,19 +15,21 @@ class DriverType
         struct
         {
             uint16_t _subdriver;
-            uint16_t _maindriver;
+            MainDriverType _maindriver;
         };
         uint32_t _drivertype;
     };
 public:
-    DriverType(uint16_t subdriver, uint16_t maindriver)
+    DriverType(uint16_t subdriver, MainDriverType maindriver)
         : _subdriver(subdriver), _maindriver(maindriver)
     {
+        static_assert(sizeof(*this) == 4, "sizeof(DriverType) must equal to 4");
     }
 
     DriverType(uint32_t drivertype)
         : _drivertype(drivertype)
     {
+        static_assert(sizeof(*this) == 4, "sizeof(DriverType) must equal to 4");
     }
 
     uint16_t subdriver() const
@@ -29,7 +37,7 @@ public:
         return _subdriver;
     }
 
-    uint16_t maindriver() const
+    MainDriverType maindriver() const
     {
         return _maindriver;
     }

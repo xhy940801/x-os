@@ -18,3 +18,7 @@ ssize_t VfsInode::write(const uint8_t* buf, size_t len, FdInfo* info)
 void VfsInode::flush()
 {
 }
+
+void VfsInode::close()
+{
+}

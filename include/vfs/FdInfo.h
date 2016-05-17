@@ -13,9 +13,21 @@ public:
     {
     }
 
+    FdInfo(const FdInfo& info)
+        : _inode(info._inode.retain()), _flags(info._flags), _pos(info._pos)
+    {
+    }
+
+    FdInfo(FdInfo&& info)
+        : _inode(info._inode), _flags(info._flags), _pos(info._pos)
+    {
+        info._inode = nullptr;
+    }
+
     ~FdInfo()
     {
-        _inode->release();
+        if(_inode)
+            _inode->release();
     }
 
     const VfsInode* inode() const

@@ -8,20 +8,21 @@
 #include <list.h>
 
 #include <vfs/DriverType.h>
+#include <vfs/VfsType.h>
 
 class FdInfo;
 
 class VfsInode : public ListNode<VfsInode, 0>
 {
-    uint32_t _fsystype;
+    VfsType _vfstype;
     DriverType _drivertype;
     VfsInode* _parent;
     List<VfsInode, 0> _children;
     size_t _opencount;
 public:
-    VfsInode(uint32_t fsystype, DriverType drivertype, VfsInode* parent)
+    VfsInode(VfsType vfstype, DriverType drivertype, VfsInode* parent)
         : ListNode<VfsInode, 0>(parent->_children),
-        _fsystype(fsystype), _drivertype(drivertype), _parent(parent), _opencount(0)
+        _vfstype(vfstype), _drivertype(drivertype), _parent(parent), _opencount(0)
     {
     }
 
@@ -43,14 +44,15 @@ public:
         if(_opencount == 0)
         {
             ListNode<VfsInode, 0>::removeSelf();
-            _parent->release();
+            if(_parent)
+                _parent->release();
             this->close();
         }
     }
 
-    uint32_t fsystype() const
+    VfsType vfstype() const
     {
-        return _fsystype;
+        return _vfstype;
     }
 
     DriverType drivertype() const
@@ -63,5 +65,5 @@ public:
     virtual ssize_t read(uint8_t* buf, size_t len, FdInfo* info);
     virtual ssize_t write(const uint8_t* buf, size_t len, FdInfo* info);
     virtual void flush();
-    virtual void close() = 0;//to do something and delete this
+    virtual void close();//to do something and delete this
 };

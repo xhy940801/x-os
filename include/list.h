@@ -10,11 +10,11 @@ class ListNode
 {
     friend class List<T, N>;
 protected:
-    T* _next;
-    T* _prev;
+    ListNode* _next;
+    ListNode* _prev;
 
     ListNode()
-        : _next(static_cast<T*>(this)), _prev(static_cast<T*>(this))
+        : _next(this), _prev(this)
     {
         static_assert(std::is_base_of<ListNode<T, N>, T>::value, "class ListNode<T, N> must base of T");
     }
@@ -22,12 +22,12 @@ protected:
     inline ListNode(List<T, N>& list);
 public:
 
-    void insertAfter(T& prev)
+    void insertAfter(ListNode& prev)
     {
         _next = prev._next;
         _prev = &prev;
-        prev._next = static_cast<T*>(this);
-        _next->_prev = static_cast<T*>(this);
+        prev._next = this;
+        _next->_prev = this;
     }
 
     void insertBefore(T& next)
@@ -43,12 +43,12 @@ public:
 
     T* next()
     {
-        return _next;
+        return static_cast<T*>(_next);
     }
 
     T* prev()
     {
-        return _prev;
+        return static_cast<T*>(_prev);
     }
 };
 
