@@ -72,6 +72,16 @@ public:
     {
         return head.prev() == head.next();
     }
+
+    T* front()
+    {
+        return head.next();
+    }
+
+    T* end()
+    {
+        return head.prev();
+    }
 };
 
 template <typename T, int N>

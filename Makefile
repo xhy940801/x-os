@@ -7,8 +7,11 @@ BUILDDIR=$(shell cd $(TBUILDDIR) && pwd)
 SRCDIR=$(shell cd $(TSRCDIR) && pwd)
 INCDIR=$(SRCDIR)/include
 BOOTMODULE=boot
-SUBMODULES=systemparams vfs tty0
-CFLAGS=-Wall -m32 -std=c++11 -nostartfiles -nostdlib -nodefaultlibs -static -fno-common -fno-use-cxa-atexit -fno-exceptions -fno-non-call-exceptions -fno-weak -fno-rtti -ffreestanding -I$(INCDIR)
+SUBMODULES=common systemparams vfs tty0 mem task
+CFLAGS=-Wall -Werror -m32 -std=c++11 -nostartfiles -nostdlib -nodefaultlibs -static -fno-common -fno-use-cxa-atexit -fno-exceptions -fno-non-call-exceptions -fno-weak -fno-rtti -ffreestanding -I$(INCDIR)
+
+ALLSRCFILES=$(foreach MODULE,$(SUBMODULES),$(wildcard $(MODULE)/*.cpp) $(wildcard $(MODULE)/*.s))
+CPPSRCFILES=$(foreach MODULE,$(SUBMODULES),$(wildcard $(MODULE)/*.cpp))
 
 export CFLAGS
 export ASM
@@ -21,12 +24,12 @@ clean:
 	$(RM) $(BUILDDIR)/$(NAME)
 	$(RM) $(BUILDDIR)/boot.bin
 	$(RM) $(BUILDDIR)/system.bin
-	$(RM) $(BUILDDIR)/*.a
 	$(RM) $(BUILDDIR)/*.o
-	for name in `echo $(BOOTMODULE) $(SUBMODULES)`;do\
-		cd $(SRCDIR)/$${name} && $(MAKE) clean \
-			BUILDDIR=$(BUILDDIR)/$${name}; \
-	done
+	$(RM) $(BUILDDIR)/*.d
+	$(RM) $(BUILDDIR)/$(BOOTMODULE)/bootsect.bin
+	$(RM) $(BUILDDIR)/$(BOOTMODULE)/setup.bin
+	$(RM) $(patsubst %,$(BUILDDIR)/%.o,$(ALLSRCFILES))
+	$(RM) $(patsubst %,$(BUILDDIR)/%.d,$(CPPSRCFILES))
 
 install:$(BUILDDIR)/$(NAME)
 
@@ -35,12 +38,16 @@ $(BUILDDIR)/$(NAME):$(BUILDDIR)/boot.bin $(BUILDDIR)/system.bin
 	dd if=$(BUILDDIR)/boot.bin of=$@ bs=512 count=5 conv=notrunc
 	dd if=$(BUILDDIR)/system.bin of=$@ bs=512 count=384 conv=notrunc seek=5
 
-$(BUILDDIR)/boot.bin:$(BUILDDIR)/$(BOOTMODULE)/out.a
-	cp $^ $@
+$(BUILDDIR)/boot.bin:$(BOOTMODULE)/bootsect.s $(BOOTMODULE)/setup.s
+	mkdir -p $(BUILDDIR)/$(BOOTMODULE)
+	nasm -o $(BUILDDIR)/$(BOOTMODULE)/bootsect.bin $(BOOTMODULE)/bootsect.s
+	nasm -o $(BUILDDIR)/$(BOOTMODULE)/setup.bin $(BOOTMODULE)/setup.s
+	dd if=$(BUILDDIR)/$(BOOTMODULE)/bootsect.bin of=$@ bs=512 count=1 conv=notrunc
+	dd if=$(BUILDDIR)/$(BOOTMODULE)/setup.bin of=$@ bs=512 count=4 conv=notrunc seek=1
 
-$(BUILDDIR)/system.bin:$(patsubst %, $(BUILDDIR)/lib%.a, $(SUBMODULES)) $(BUILDDIR)/main.o $(BUILDDIR)/head.o
+$(BUILDDIR)/system.bin:$(patsubst %,$(BUILDDIR)/%.o,$(ALLSRCFILES)) $(BUILDDIR)/head.o $(BUILDDIR)/main.o
 	$(CC) $(CFLAGS) -Wl,--oformat=binary,-m,elf_i386,-M,-x,-e,startup_32,--section-start,.text=0xc0100000 -static \
-	-o $@ $(BUILDDIR)/head.o $(BUILDDIR)/main.o $(patsubst %,$(BUILDDIR)/%/*.o,$(SUBMODULES)) -lgcc |\
+	-o $@ $(BUILDDIR)/head.o $(BUILDDIR)/main.o $(patsubst %,$(BUILDDIR)/%.o,$(ALLSRCFILES)) -lgcc |\
 	tee $(BUILDDIR)/os.symbols.origin |\
 	grep -E "(^\s+0x[0-9a-f]+\s+[a-zA-Z_]\S+$$)|(^\s*\.text\s+0x[0-9a-f]+\s+0x[0-9a-f]+\s+[a-zA-Z_]\S+$$)" |\
 	sed -r "s/^\s*\.text\s+(0x[0-9a-f]+)\s+0x[0-9a-f]+\s+([a-zA-Z_]\S+)$$/\1 \2/" |\
@@ -49,27 +56,30 @@ $(BUILDDIR)/system.bin:$(patsubst %, $(BUILDDIR)/lib%.a, $(SUBMODULES)) $(BUILDD
 	sed -r "s/^[\t ]+//" | sed -r "s/[\t ]+/ /" |\
 	sed -r "N;s/(0x[0-9a-f]+)\s+([a-zA-Z_]\S+)\s*\n\1\s+([a-zA-Z_]\S+)/\1 \2[\3]/;" > $(BUILDDIR)/os.symbols
 
-$(BUILDDIR)/lib%.a:$(BUILDDIR)/%/out.a
-	cp $^ $@
+$(BUILDDIR)/%.s.o:$(SRCDIR)/%.s
+	@mkdir -p $(dir $@)
+	$(ASM) -f elf -o $@ $^
 
-$(BUILDDIR)/%/out.a:$(SRCDIR)/%/* $(INCDIR)/*
-	mkdir -p $(BUILDDIR)/$(patsubst $(BUILDDIR)/%/out.a,%,$@)
-	cd $(patsubst $(BUILDDIR)/%/out.a,%,$@) && \
-	$(MAKE) \
-	BUILDDIR=$(BUILDDIR)/$(patsubst $(BUILDDIR)/%/out.a,%,$@) \
-	SRCDIR=$(SRCDIR)/$(patsubst $(BUILDDIR)/%/out.a,%,$@) \
-	INCDIR=$(INCDIR)
+$(BUILDDIR)/%.cpp.o:$(SRCDIR)/%.cpp $(BUILDDIR)/%.cpp.d
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/%.cpp.d:$(SRCDIR)/%.cpp
+	@mkdir -p $(dir $@)
+	@$(RM) $@
+	@$(CC) -MM $(CFLAGS) $< | sed 's/\($(patsubst %.c,%,$(notdir $<))\)\.o *: */obj\/\1.o dep\/\1.d:/' > $@
 
 $(BUILDDIR)/head.o:$(SRCDIR)/head.s
 	$(ASM) -f elf -o $@ $^
 
-$(BUILDDIR)/main.o:$(SRCDIR)/main.cpp $(BUILDDIR)/main.d
+$(BUILDDIR)/main.o:$(SRCDIR)/main.cpp $(BUILDDIR)/main.cpp.d
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(BUILDDIR)/main.d:$(SRCDIR)/main.cpp
+$(BUILDDIR)/main.cpp.d:$(SRCDIR)/main.cpp
 	@$(RM) $@
 	@$(CC) -MM $(CFLAGS) $< | sed 's/\($(patsubst %.c,%,$(notdir $<))\)\.o *: */obj\/\1.o dep\/\1.d:/' > $@
 
 ifneq ($(MAKECMDGOALS),clean)
-sinclude $(BUILDDIR)/main.d
+sinclude $(BUILDDIR)/main.cpp.d
+sinclude $(patsubst %,$(BUILDDIR)/%.d,$(CPPSRCFILES))
 endif

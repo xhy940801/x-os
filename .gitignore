@@ -1,2 +1,4 @@
 .build
+.bochsrc
+bochsout.txt
 qrun.sh
