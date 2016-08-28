@@ -1,7 +1,7 @@
 #include <cstddef>
 #include <limits>
-#include <common.h>
-#include <tty0.h>
+#include "common.h"
+#include "tty0.h"
 
 static inline void _writeToFD1(const char* str, size_t len)
 {

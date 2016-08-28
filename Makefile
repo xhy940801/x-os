@@ -8,7 +8,7 @@ SRCDIR=$(shell cd $(TSRCDIR) && pwd)
 INCDIR=$(SRCDIR)/include
 BOOTMODULE=boot
 SUBMODULES=common systemparams vfs tty0 mem task
-CFLAGS=-Wall -Werror -m32 -std=c++11 -nostartfiles -nostdlib -nodefaultlibs -static -fno-common -fno-use-cxa-atexit -fno-exceptions -fno-non-call-exceptions -fno-weak -fno-rtti -ffreestanding -I$(INCDIR)
+CFLAGS=-Wall -Werror -m32 -std=c++11 -nostartfiles -nostdlib -nodefaultlibs -static -fno-common -fno-use-cxa-atexit -fno-exceptions -fno-non-call-exceptions -fno-weak -fno-rtti -ffreestanding -iquote$(INCDIR)
 
 ALLSRCFILES=$(foreach MODULE,$(SUBMODULES),$(wildcard $(MODULE)/*.cpp) $(wildcard $(MODULE)/*.s))
 CPPSRCFILES=$(foreach MODULE,$(SUBMODULES),$(wildcard $(MODULE)/*.cpp))

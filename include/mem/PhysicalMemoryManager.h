@@ -1,7 +1,7 @@
 #pragma once
 
-#include <mem/PhysicalPageInfo.h>
-#include <mem/commondefs.h>
+#include "mem/PhysicalPageInfo.h"
+#include "mem/commondefs.h"
 
 class PhysicalMemoryManager
 {

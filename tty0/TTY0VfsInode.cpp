@@ -1,6 +1,6 @@
-#include <tty0/TTY0VfsInode.h>
+#include "tty0/TTY0VfsInode.h"
 
-#include <common.h>
+#include "common.h"
 
 void TTY0VfsInode::flushCursor()
 {

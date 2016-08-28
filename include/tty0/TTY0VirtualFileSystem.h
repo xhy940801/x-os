@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vfs.h>
+#include "vfs.h"
 
-#include <tty0/TTY0VfsInode.h>
+#include "tty0/TTY0VfsInode.h"
 
 class TTY0VirtualFileSystem : public VirtualFileSystem
 {

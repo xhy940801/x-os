@@ -1,5 +1,5 @@
-#include <common.h>
-#include <tty0.h>
+#include "common.h"
+#include "tty0.h"
 
 void _static_assert_func(const char* name, const char* file, unsigned int line, const char* func)
 {

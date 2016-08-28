@@ -1,4 +1,4 @@
-#include <vfs/VfsInode.h>
+#include "vfs/VfsInode.h"
 
 VfsInode* VfsInode::openChild(const char* subpath, size_t len)
 {

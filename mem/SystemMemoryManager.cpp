@@ -1,8 +1,8 @@
-#include <mem/SystemMemoryManager.h>
+#include "mem/SystemMemoryManager.h"
 
-#include <common.h>
+#include "common.h"
 
-#include <mem/commondefs.h>
+#include "mem/commondefs.h"
 
 static inline void mapKernelMemory(uint32_t dst, uint32_t src, uint8_t type)
 {

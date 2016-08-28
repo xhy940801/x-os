@@ -1,4 +1,4 @@
-#include <tty0/TTY0VirtualFileSystem.h>
+#include "tty0/TTY0VirtualFileSystem.h"
 
 TTY0VirtualFileSystem::TTY0VirtualFileSystem(VfsInode* rootinode)
     : VirtualFileSystem("tty0", VfsType::TTY0), _rootinode(rootinode)

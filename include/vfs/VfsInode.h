@@ -3,12 +3,12 @@
 #include <cstdint>
 #include <cstddef>
 
-#include <common.h>
+#include "common.h"
 
-#include <list.h>
+#include "list.h"
 
-#include <vfs/DriverType.h>
-#include <vfs/VfsType.h>
+#include "vfs/DriverType.h"
+#include "vfs/VfsType.h"
 
 class FdInfo;
 

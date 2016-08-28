@@ -1,9 +1,9 @@
 #include <new>
 
-#include <vfs.h>
+#include "vfs.h"
 
-#include <tty0/TTY0VfsInode.h>
-#include <tty0/TTY0VirtualFileSystem.h>
+#include "tty0/TTY0VfsInode.h"
+#include "tty0/TTY0VirtualFileSystem.h"
 
 uint8_t tty0inode[sizeof(TTY0VfsInode)];
 uint8_t tty0vfs[sizeof(TTY0VirtualFileSystem)];

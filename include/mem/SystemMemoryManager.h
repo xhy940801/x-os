@@ -1,7 +1,7 @@
 #pragma once
 
-#include <mem/BuddyManager.h>
-#include <mem/PhysicalMemoryManager.h>
+#include "mem/BuddyManager.h"
+#include "mem/PhysicalMemoryManager.h"
 
 class SystemMemoryManager
 {

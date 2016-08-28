@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vfs/DriverType.h>
-#include <vfs/VfsType.h>
+#include "vfs/DriverType.h"
+#include "vfs/VfsType.h"
 
 class VfsInode;
 

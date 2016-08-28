@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include <vfs.h>
+#include "vfs.h"
 
 class TTY0VfsInode : public VfsInode
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tty0/TTY0VirtualFileSystem.h>
+#include "tty0/TTY0VirtualFileSystem.h"
 
 void initTTY0Module();
 

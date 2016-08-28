@@ -1,6 +1,6 @@
-#include <mem/BuddyManager.h>
+#include "mem/BuddyManager.h"
 
-#include <common.h>
+#include "common.h"
 
 void BuddyManager::init()
 {

@@ -1,10 +1,10 @@
-#include <mem/BuddySlot.h>
+#include "mem/BuddySlot.h"
 
 #include <new>
 
-#include <common.h>
+#include "common.h"
 
-#include <mem.h>
+#include "mem.h"
 
 void BuddySlot::init(size_t listSize)
 {

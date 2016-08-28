@@ -2,8 +2,8 @@
 
 #include <cstddef>
 
-#include <mem/BuddySlot.h>
-#include <mem/commondefs.h>
+#include "mem/BuddySlot.h"
+#include "mem/commondefs.h"
 
 class BuddyManager
 {

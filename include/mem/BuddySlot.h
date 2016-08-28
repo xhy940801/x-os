@@ -3,9 +3,9 @@
 #include <cstddef>
 #include <cstdint>
 
-#include <list.h>
-#include <bitmap.h>
-#include <common.h>
+#include "list.h"
+#include "bitmap.h"
+#include "common.h"
 
 class BuddySlot
 {
