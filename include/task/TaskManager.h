@@ -1,8 +1,6 @@
 #pragma once
 
-class TaskInfo
-{
-};
+class TaskInfo;
 
 class TaskManager
 {
