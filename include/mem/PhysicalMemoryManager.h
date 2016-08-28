@@ -13,6 +13,6 @@ public:
     PhysicalPageInfo* getOnePageUnblock();
     uint32_t getPhysicalAddress(PhysicalPageInfo* pageinfo)
     {
-        return (pageinfo - _memoryhead) * 4096;
+        return (pageinfo - _memoryhead) * mem::PAGESIZE;
     }
 };

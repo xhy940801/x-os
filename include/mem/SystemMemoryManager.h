@@ -1,7 +1,7 @@
 #pragma once
 
-#include "mem/BuddyManager.h"
-#include "mem/PhysicalMemoryManager.h"
+#include <cstdint>
+#include <cstddef>
 
 class SystemMemoryManager
 {
@@ -12,8 +12,6 @@ class SystemMemoryManager
     };
 
 private:
-    PhysicalMemoryManager _pmm;
-    BuddyManager _bm;
     MemoryUsedInfo _begin;
     uint8_t* _usedEnd;
 public:
@@ -22,4 +20,6 @@ public:
     void* getPersisteMemory(size_t len);
     void* getPersistePages(size_t num);
 
+    void* allocPages(size_t level);
+    void freePages(void* page, size_t level);
 };

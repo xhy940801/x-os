@@ -25,7 +25,7 @@ public:
     {
         if(_list.empty())
             return -1;
-        Node* node = _list.front();
+        Node* node = _list.begin();
         node->removeSelf();
         int pos = (node - _nodes) / 2;
         assert(pos >= 0);

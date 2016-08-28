@@ -2,6 +2,8 @@
 
 #include <type_traits>
 
+#include "common.h"
+
 template <typename T, int N = 0>
 class List;
 
@@ -37,6 +39,7 @@ public:
 
     void removeSelf()
     {
+        assert(_prev != _next);
         _prev->_next = _next;
         _next->_prev = _prev;
     }
@@ -73,14 +76,24 @@ public:
         return head.prev() == head.next();
     }
 
-    T* front()
+    T* begin()
     {
         return head.next();
     }
 
-    T* end()
+    T* rbegin()
     {
         return head.prev();
+    }
+
+    T* end()
+    {
+        return &head;
+    }
+
+    T* rend()
+    {
+        return &head;
     }
 };
 

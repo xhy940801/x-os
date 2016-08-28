@@ -11,4 +11,6 @@ namespace mem
     const size_t M1G = 1024 * 1024 * 1024;
     const size_t M1M = 1024 * 1024;
     const size_t M1K = 1024;
+    const size_t MINSLOT = 8;
+    const size_t MAXSLOT = 256;
 }
