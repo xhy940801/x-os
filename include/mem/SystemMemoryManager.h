@@ -21,5 +21,6 @@ public:
     void* getPersistePages(size_t num);
 
     void* allocPages(size_t level);
+    void* allocOnePage(uintptr_t& physicalAddr);
     void freePages(void* page, size_t level);
 };

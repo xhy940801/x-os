@@ -24,16 +24,28 @@ private:
     union
     {
         PhysicalPageInfo* _next;
-        TaskInfo* _task;
+        char* _page;
     };
+
+    void setPage(char* page)
+    {
+        _page = page;
+    }
+
+    friend class SystemMemoryManager;
 public:
     PhysicalPageInfo(Type type, PhysicalPageInfo* next)
         : _active(mem::USHRTMAX), _type(type), _share(0), _next(next)
     {
     }
 
-    PhysicalPageInfo(Type type, TaskInfo* task)
-        : _active(mem::USHRTMAX), _type(type), _share(1), _task(task)
+    PhysicalPageInfo(Type type, char* page)
+        : _active(mem::USHRTMAX), _type(type), _share(0), _page(page)
+    {
+    }
+
+    PhysicalPageInfo(Type type)
+        : _active(mem::USHRTMAX), _type(type), _share(0)
     {
     }
 
@@ -60,16 +72,6 @@ public:
     const PhysicalPageInfo* next() const
     {
         return _next;
-    }
-
-    TaskInfo* task()
-    {
-        return _task;
-    }
-
-    const TaskInfo* task() const
-    {
-        return _task;
     }
 };
 

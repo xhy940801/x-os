@@ -10,13 +10,13 @@ inline void memset(void* dst, int val, size_t len)
     _stosb(dst, val, len);
 }
 
-inline void memcpy(void* dst, void* src, size_t len)
+inline void memcpy(void* dst, const void* src, size_t len)
 {
     _cld();
     _movsb(dst, src, len);
 }
 
-inline void memmove(void* dst, void* src, size_t len)
+inline void memmove(void* dst, const void* src, size_t len)
 {
     if(dst < src)
     {
@@ -26,7 +26,7 @@ inline void memmove(void* dst, void* src, size_t len)
     else
     {
         _std();
-        _movsb(reinterpret_cast<char*>(dst) + len - 1, reinterpret_cast<char*>(src) + len - 1, len);
+        _movsb(reinterpret_cast<char*>(dst) + len - 1, reinterpret_cast<const char*>(src) + len - 1, len);
     }
 }
 

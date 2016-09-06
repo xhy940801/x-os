@@ -220,16 +220,20 @@ namespace RBTree
                     z->parent->right = x;
 
                 if (z == leftmost())
+                {
                     if (z->right == nullptr)
                         leftmost() = z->parent;
                     else
                         leftmost() = minimum(x);
+                }
 
                 if (z == rightmost())
+                {
                     if (z->left == nullptr)
                         rightmost() = z->parent;
                     else
                         rightmost() = maximum(x);
+                }
             }
 
             if (y->color != Color::RED)

@@ -4,7 +4,6 @@
 #include "common.h"
 
 #include "systemparams.h"
-#include "task.h"
 
 extern char _end[];
 
@@ -12,7 +11,6 @@ void PhysicalMemoryManager::init()
 {
     _memoryhead = reinterpret_cast<PhysicalPageInfo*>(_end);
     _fmemoryhead = _memoryhead;
-    TaskInfo* process0task = taskManager.process0task();
     size_t usedpos = (reinterpret_cast<size_t>(_end) + mem::PAGESIZE - 1) / mem::PAGESIZE * mem::PAGESIZE;
     size_t pageInfoCount = systemParams.memsize() / mem::PAGESIZE;
     assert(pageInfoCount * sizeof(PhysicalPageInfo) + reinterpret_cast<size_t>(_end) < 16 * 1024 * 1024 + mem::KMEMSTART);
@@ -23,7 +21,7 @@ void PhysicalMemoryManager::init()
     size_t nlk = i - 1;
     //640k-end-align-pagesize
     for(; i < (usedpos - mem::KMEMSTART) / mem::PAGESIZE; ++i)
-        new (_memoryhead + i) PhysicalPageInfo(PhysicalPageInfo::Type::KERNEL, process0task);
+        new (_memoryhead + i) PhysicalPageInfo(PhysicalPageInfo::Type::KERNEL);
     size_t ntg = i;
     for(; i < pageInfoCount; ++i)
         new (_memoryhead + i) PhysicalPageInfo(PhysicalPageInfo::Type::NORMAL, _memoryhead + i + 1);
@@ -34,7 +32,7 @@ void PhysicalMemoryManager::init()
 size_t PhysicalMemoryManager::endpos()
 {
     size_t pageInfoCount = systemParams.memsize() / mem::PAGESIZE;
-    return reinterpret_cast<size_t>(_memoryhead + pageInfoCount);
+    return reinterpret_cast<size_t>(_memoryhead + pageInfoCount + 1);
 }
 
 PhysicalPageInfo* PhysicalMemoryManager::getOnePageUnblock()

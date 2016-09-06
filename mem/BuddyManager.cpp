@@ -7,7 +7,7 @@ void BuddyManager::init()
     for(size_t i = 0, listSize = mem::M1G / mem::PAGESIZE ; i < mem::BUDDYDEP; ++i, listSize /= 2)
         _slots[i].init(listSize);
     assert(mem::PAGESIZE << (mem::BUDDYDEP - 1) == 64 * mem::M1M);
-    for(size_t i = 1; i + 1 < mem::M1G / (64 * mem::M1M); ++i)
+    for(size_t i = mem::M1G / (64 * mem::M1M) - 2; i > 0 ; --i)
         _slots[mem::BUDDYDEP - 1].freeNode(i);
 }
 
@@ -46,9 +46,11 @@ void* BuddyManager::getAddress(size_t level)
 {
     assert(level < mem::BUDDYDEP);
     int pos = getPos(level);
+    printk("pos %d\n", pos);
     if(pos < 0)
         return nullptr;
-    size_t rs = pos * (1 << level) * mem::PAGESIZE;
+    size_t rs = pos * (1 << level) * mem::PAGESIZE + mem::KMEMSTART;
+    printk("get addr pos: %u\n", rs);
     return reinterpret_cast<void*>(rs);
 }
 
@@ -56,6 +58,8 @@ void BuddyManager::freeAddress(void* p, size_t level)
 {
     assert(level < mem::BUDDYDEP);
     size_t ptr = reinterpret_cast<size_t>(p);
+    assert(ptr > mem::KMEMSTART);
+    ptr -= mem::KMEMSTART;
     assert(ptr % ((1 << level) * mem::PAGESIZE) == 0);
     size_t pos = ptr / ((1 << level) * mem::PAGESIZE);
     freePos(pos, level);

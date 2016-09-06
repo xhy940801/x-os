@@ -12,11 +12,13 @@ void initTTY0Module()
 {
     TTY0VfsInode* vfsinode = reinterpret_cast<TTY0VfsInode*>(tty0inode);
     TTY0VirtualFileSystem* vfs = reinterpret_cast<TTY0VirtualFileSystem*>(tty0vfs);
+    VfsInode* root = vfsManager.root();
     new (vfsinode) TTY0VfsInode(
         VfsType::TTY0,
         DriverType(0, MainDriverType::TTY0),
-        nullptr,
+        root,
         reinterpret_cast<TTY0VfsInode::TTY0Character*>(0xfffb8000)
     );
+    vfsinode->retain();
     new (vfs) TTY0VirtualFileSystem(vfsinode);
 }

@@ -27,16 +27,15 @@ public:
             return -1;
         Node* node = _list.begin();
         node->removeSelf();
-        int pos = (node - _nodes) / 2;
+        int pos = node - _nodes;
         assert(pos >= 0);
-        _map.flip(pos);
+        _map.flip(pos / 2);
         return pos;
     }
     void freeNode(size_t pos)
     {
         _list.pushFront(_nodes[pos]);
-        pos /= 2;
-        _map.flip(pos);
+        _map.flip(pos / 2);
     }
     //return false if it need merge
     bool freeNodeAndMerge(size_t pos)

@@ -11,7 +11,7 @@ public:
     void init();
     size_t endpos();    //return the end pos of the array memoryhead
     PhysicalPageInfo* getOnePageUnblock();
-    uint32_t getPhysicalAddress(PhysicalPageInfo* pageinfo)
+    uintptr_t getPhysicalAddress(PhysicalPageInfo* pageinfo)
     {
         return (pageinfo - _memoryhead) * mem::PAGESIZE;
     }

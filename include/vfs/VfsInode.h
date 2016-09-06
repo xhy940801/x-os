@@ -19,6 +19,10 @@ class VfsInode : public ListNode<VfsInode, 0>
     VfsInode* _parent;
     List<VfsInode, 0> _children;
     size_t _opencount;
+
+    VfsInode() : _vfstype(VfsType::NONE), _drivertype(0, MainDriverType::NONE), _parent(nullptr), _opencount(1) {}
+
+    friend class VfsManager;
 public:
     VfsInode(VfsType vfstype, DriverType drivertype, VfsInode* parent)
         : ListNode<VfsInode, 0>(parent->_children),

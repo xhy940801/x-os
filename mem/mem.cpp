@@ -7,7 +7,7 @@ BuddyManager buddyManager;
 
 void initMemModule()
 {
-	physicalMemoryManager.init();
+    physicalMemoryManager.init();
     memoryManager.init();
     buddyManager.init();
 }

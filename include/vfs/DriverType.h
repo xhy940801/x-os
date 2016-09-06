@@ -4,6 +4,7 @@
 
 enum class MainDriverType : uint16_t
 {
+    NONE    = 0,
     HD      = 3,
     TTY0    = 5
 };

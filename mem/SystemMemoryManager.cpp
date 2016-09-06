@@ -21,7 +21,6 @@ static inline void unmapKernelMemory(uint32_t dst)
 
 void SystemMemoryManager::init()
 {
-    physicalMemoryManager.init();
     _begin.used = reinterpret_cast<uint8_t*>(physicalMemoryManager.endpos());
     size_t scap = (reinterpret_cast<size_t>(_begin.used) + mem::PAGESIZE - 1) / mem::PAGESIZE * mem::PAGESIZE;
     _begin.capacity = reinterpret_cast<uint8_t*>(scap);
@@ -51,7 +50,7 @@ void* SystemMemoryManager::getPersisteMemory(size_t len)
 
 void* SystemMemoryManager::getPersistePages(size_t num)
 {
-    for(size_t i = 0; i < num; ++i)
+    for (size_t i = 0; i < num; ++i)
     {
         _usedEnd -= mem::PAGESIZE;
         PhysicalPageInfo* info = physicalMemoryManager.getOnePageUnblock();
@@ -64,4 +63,34 @@ void* SystemMemoryManager::getPersistePages(size_t num)
         );
     }
     return _usedEnd;
+}
+
+void* SystemMemoryManager::allocPages(size_t level)
+{
+    void* p = buddyManager.getAddress(level);
+    size_t pcount = 1 << level;
+    uintptr_t cp = reinterpret_cast<uintptr_t>(p);
+    for (size_t i = 0; i < pcount; ++i)
+    {
+        PhysicalPageInfo* info = physicalMemoryManager.getOnePageUnblock();
+        mapKernelMemory(cp, physicalMemoryManager.getPhysicalAddress(info), 7);
+        info->setPage(reinterpret_cast<char*>(cp));
+        cp += mem::PAGESIZE;
+    }
+    return p;
+}
+
+void* SystemMemoryManager::allocOnePage(uintptr_t& physicalAddr)
+{
+    void* p = buddyManager.getAddress(0);
+    PhysicalPageInfo* info = physicalMemoryManager.getOnePageUnblock();
+    physicalAddr = physicalMemoryManager.getPhysicalAddress(info);
+    mapKernelMemory(reinterpret_cast<uint32_t>(p), physicalAddr, 7);
+    info->setPage(reinterpret_cast<char*>(p));
+    return p;
+}
+
+void SystemMemoryManager::freePages(void* page, size_t level)
+{
+
 }
