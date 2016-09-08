@@ -6,26 +6,42 @@
 #include "mem.h"
 #include "asm.h"
 #include "common.h"
+#include "task/TaskManagerHelper.h"
+#include "task/CpuDescriptor.h"
 
 extern "C"
 {
-    void scheduleesp(uintptr_t dst, uintptr_t* src);
-    void _setRet(int* ret);
+    void _task_swapesp(uintptr_t dst, uintptr_t* src);
 }
 
 char process1page[2 * mem::PAGESIZE];
+tss_struct cpu0tss;
+extern gdt_descriptor _gdt[];
 
 TaskManager::TaskManager() : current(nullptr)
 {
     task0 = reinterpret_cast<TaskInfo*>(process1page);
-    new (task0) TaskInfo((uint32_t*) 0xc0100000, 0x00200000, 1);
+    new (task0) TaskInfo((uint32_t*) 0xc0100000, 0x00200000);
     current = task0;
+
+    cpu0tss.ss0 = 0x10;
+    cpu0tss.esp0 = reinterpret_cast<uint32_t>(current) + 2 * mem::PAGESIZE;
+
+    gdt_descriptor* pdt = _gdt + 3;
+    pdt->l_limit = (short) (sizeof(tss_struct));
+    pdt->l_base = (short) (((unsigned int) &cpu0tss) & 0xffff);
+    pdt->m_base = (char) ((((unsigned int) &cpu0tss) >> 16) & 0xff);
+    pdt->attr = 0x89 | ((sizeof(tss_struct) >> 8) & 0x0f00);
+    pdt->h_base = (char) ((((unsigned int) &cpu0tss) >> 24) & 0xff);
+
+    _ltr(3 * 8);
 }
 
 inline void TaskManager::reloadCpuState()
 {
     _frstor(current->cpuState.fpuState);
     _lcr3(current->cpuState.catalogTableP);
+    cpu0tss.esp0 = reinterpret_cast<uint32_t>(current) + 2 * mem::PAGESIZE;
 }
 
 inline void TaskManager::storeCpuState()
@@ -33,12 +49,12 @@ inline void TaskManager::storeCpuState()
     _fnsave(current->cpuState.fpuState);
 }
 
-void TaskManager::scheduleto(TaskInfo* target)
+void TaskManager::switchTask(TaskInfo* target)
 {
     assert(target != current);
     storeCpuState();
     std::swap(current, target);
-    scheduleesp(current->esp, &target->esp);
+    _task_swapesp(current->esp, &target->esp);
     _memorybar();
     reloadCpuState();
 }
@@ -48,31 +64,11 @@ void TaskManager::scheduleto(TaskInfo* target)
 
 int TaskManager::fork(unsigned long options)
 {
-    TaskInfo* task = reinterpret_cast<TaskInfo*>(memoryManager.allocPages(1));   //alloc 2 page
-    if (task == nullptr)
-        return -1;
-    uintptr_t catalogTableP;
-    uint32_t* catalog = reinterpret_cast<uint32_t*>(memoryManager.allocOnePage(catalogTableP));
-    if (catalog == nullptr)
-    {
-        memoryManager.freePages(task, 1);
-        return -1;
-    }
-    new (task) TaskInfo(catalog, catalogTableP, 1, 0, *current);
-    
     int ret = 0;
     uintptr_t esp;
-    ptrdiff_t stackSize;
     _lesp(esp);
-    stackSize = reinterpret_cast<uintptr_t>(current) + 2 * mem::PAGESIZE - esp;
-    task->esp = reinterpret_cast<uintptr_t>(task) + 2 * mem::PAGESIZE - stackSize;
-    printk("target %u src %u size %u retpos %u\n", task->esp, esp, stackSize, &&schedule_ret_label);
-    memcpy(reinterpret_cast<char*>(task->esp), reinterpret_cast<char*>(esp), stackSize);
-    task->esp -= 4;
-    *reinterpret_cast<uintptr_t*>(task->esp) = reinterpret_cast<uintptr_t>(&&schedule_ret_label);
-    _setRet(&ret);
-    _memorybar();
-    scheduleto(task);
+    TaskInfo* task = TaskManagerHelper::makeTaskAndSetRet(esp, ret, reinterpret_cast<uintptr_t>(&&schedule_ret_label));
+    switchTask(task);
     _memorybar();
     if (ret != 0)
         return ret;

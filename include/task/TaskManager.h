@@ -10,7 +10,7 @@ class TaskManager
 public:
     TaskManager();
 
-    void scheduleto(TaskInfo* target);
+    void switchTask(TaskInfo* target);
 
     void reloadCpuState();
     void storeCpuState();

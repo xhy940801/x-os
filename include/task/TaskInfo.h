@@ -4,23 +4,25 @@
 
 #include "map.h"
 #include "task/CpuState.h"
+
 #include "auth.h"
+#include "sched.h"
+#include "wait.h"
 
 
-class TaskInfo : MapNode<0>
+class TaskInfo : public MapNode<0>, public ScheduleInfo, public AuthInfo, public WaitInfo
 {
     CpuState cpuState;
     uintptr_t esp;
     uint32_t* catalog;
 
-    AuthInfo auth;
-
     friend class TaskManager;
+    friend class TaskManagerHelper;
 
-    TaskInfo(uint32_t* _catalog, uintptr_t _catalogTableP, pid_t _pid);
+    TaskInfo(uint32_t* _catalog, uintptr_t _catalogTableP);
 
 public:
-    TaskInfo(uint32_t* _catalog, uintptr_t _catalogTableP, pid_t _pid, unsigned long options, const TaskInfo& taskInfo);
+    TaskInfo(uint32_t* _catalog, uintptr_t _catalogTableP, unsigned long options, const TaskInfo& taskInfo);
 
     TaskInfo() = delete;
     TaskInfo(const TaskInfo&) = delete;
