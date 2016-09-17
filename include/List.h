@@ -21,6 +21,11 @@ protected:
         static_assert(std::is_base_of<ListNode<T, N>, T>::value, "class ListNode<T, N> must base of T");
     }
 
+    ListNode(ListNode* node)
+    {
+        node->insertBefore(*this);
+    }
+
     inline ListNode(List<T, N>& list);
 public:
 
@@ -33,7 +38,7 @@ public:
         next._next->_prev = &next;
     }
 
-    void insertBefore(T& prev)
+    void insertBefore(ListNode& prev)
     {
         prev._prev = this->_prev;
         prev._next = this;
@@ -65,21 +70,21 @@ class List
     friend class ListNode<T, N>;
     ListNode<T, N> head;
 public:
-    void pushFront(T& node)
+    void pushFront(ListNode<T, N>& node)
     {
         head.insertAfter(node);
     }
 
-    void pushBack(T& node)
+    void pushBack(ListNode<T, N>& node)
     {
         head.insertBefore(node);
     }
 
     bool empty()
     {
-        bool isEmpty = head.prev() == &head;
+        bool isEmpty = head._prev == &head;
         if (isEmpty)
-            assert(head.prev() == &head && head.next() == &head);
+            assert(head._prev == &head && head._next == &head);
         return isEmpty;
     }
 

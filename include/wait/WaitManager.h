@@ -4,6 +4,8 @@
 #include "wait/WaitInfo.h"
 #include "wait/commondefs.h"
 
+#include "task/TaskStatus.h"
+
 class WaitManager
 {
     struct JiffiesSegmentation
@@ -19,12 +21,9 @@ class WaitManager
 
 private:
     TimeWheel sleepWheels[wait::WHEEL_SIZE];
-    List<WaitInfo, 0> waitList;
+    TaskStatusList waitList;
 
-    void wait(WaitInfo* info)
-    {
-        waitList.pushBack(*info);
-    }
+    void wait(WaitInfo* info);
 
     void sleep(WaitInfo* info, long jiffies);
 

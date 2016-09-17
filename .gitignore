@@ -2,3 +2,4 @@
 .bochsrc
 bochsout.txt
 qrun.sh
+.DS_Store

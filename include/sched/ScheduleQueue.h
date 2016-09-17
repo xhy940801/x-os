@@ -7,11 +7,13 @@
 #include "List.h"
 #include "common.h"
 
+#include "task/TaskStatus.h"
+
 class ScheduleInfo;
 
 class ScheduleQueue
 {
-    List<ScheduleInfo, 0> levels[sched::LEVEL_SIZE];
+    TaskStatusList levels[sched::LEVEL_SIZE];
 
 public:
     ScheduleQueue() = default;
@@ -25,4 +27,6 @@ public:
     ScheduleInfo* pop();
 
     void push(ScheduleInfo* info);
+
+    TaskStatusList& level(ScheduleInfo* info);
 };

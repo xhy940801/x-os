@@ -14,15 +14,15 @@ ScheduleManager::ScheduleManager()
 
 void ScheduleManager::schedule(bool passive)
 {
-    ScheduleInfo* current = taskManager.curtask();
+    TaskInfo* current = taskManager.curtask();
     if (passive)
         current->decNice();
     else
         current->incNice();
 
-    if (current->restTime == 0 && current->state == ScheduleInfoState::RUNNING)
+    if (current->restTime == 0 && current->equal(TaskStatus::RUNNING))
     {
-        current->outQueue();
+        current->TaskStatusInfo::removeSelf();
         current->resetRestTime();
         expire->push(current);
     }
@@ -43,4 +43,20 @@ void ScheduleManager::schedule(bool passive)
 
     if (target != current)
         taskManager.switchTask(static_cast<TaskInfo*>(target));
+}
+
+void ScheduleManager::putInQueue(ScheduleInfo* info)
+{
+    TaskStatusList* list;
+    if (info->restTime == 0)
+    {
+        info->resetRestTime();
+        if (info->scheduleLoop == scheduleLoop)
+            list = &expire->level(info);
+        else
+            list = &active->level(info);
+    }
+    else
+        list = &active->level(info);
+    static_cast<TaskInfo*>(info)->changeStatus(TaskStatus::RUNNING, *list);
 }

@@ -4,10 +4,12 @@
 
 #include "List.h"
 
-class WaitInfo : public ListNode<WaitInfo, 0>
+class WaitInfo
 {
     long wakeupJiffies;
     WakeupRet ret;
+
+    friend class WaitManager;
 
 protected:
     WaitInfo() = default;
@@ -17,7 +19,7 @@ public:
     void sleep(long jiffies);
     void wakeup(WakeupRet _ret);
 
-    WaitInfo(unsigned long options, const WaitInfo& info) : ListNode<WaitInfo, 0>(), wakeupJiffies(info.wakeupJiffies), ret(info.ret) {}
+    WaitInfo(unsigned long options, const WaitInfo& info) : wakeupJiffies(info.wakeupJiffies), ret(info.ret) {}
 
     WaitInfo(const WaitInfo&) = delete;
     WaitInfo(WaitInfo&&) = delete;

@@ -4,13 +4,14 @@
 
 #include "map.h"
 #include "task/CpuState.h"
+#include "task/TaskStatus.h"
 
-#include "auth.h"
-#include "sched.h"
-#include "wait.h"
+#include "auth/AuthInfo.h"
+#include "sched/ScheduleInfo.h"
+#include "wait/WaitInfo.h"
 
 
-class TaskInfo : public MapNode<0>, public ScheduleInfo, public AuthInfo, public WaitInfo
+class TaskInfo : public MapNode<0>, public TaskStatusInfo, public ScheduleInfo, public AuthInfo, public WaitInfo
 {
     CpuState cpuState;
     uintptr_t esp;

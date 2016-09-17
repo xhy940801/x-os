@@ -2,32 +2,37 @@
 
 #include <cstdint>
 
-#include "List.h"
 #include "wait/WaitInfo.h"
+#include "task/TaskStatus.h"
 
 class TimeWheel
 {
-    List<WaitInfo, 0> dial[256];
+    TaskStatusList dials[256];
 
 public:
-    WaitInfo* pop(uint8_t clock)
+    TaskStatusInfo* pop(uint8_t clock)
     {
-        if (dial[clock].empty())
+        if (dials[clock].empty())
             return nullptr;
-        WaitInfo* info = dial[clock].begin();
+        TaskStatusInfo* info = dials[clock].begin();
         info->removeSelf();
         return info;
     }
 
-    WaitInfo* begin(uint8_t clock)
+    TaskStatusInfo* begin(uint8_t clock)
     {
-        if (dial[clock].empty())
+        if (dials[clock].empty())
             return nullptr;
-        return dial[clock].begin();
+        return dials[clock].begin();
     }
 
-    void push(WaitInfo* info, uint8_t clock)
+    void push(TaskStatusInfo* info, uint8_t clock)
     {
-        dial[clock].pushBack(*info);
+        dials[clock].pushBack(*info);
+    }
+
+    TaskStatusList& dial(uint8_t clock)
+    {
+        return dials[clock];
     }
 };

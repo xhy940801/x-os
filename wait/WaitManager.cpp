@@ -1,20 +1,29 @@
 #include "wait/WaitManager.h"
 #include "wait/WakeupRet.h"
 
+#include "task.h"
+
 #include "sched.h"
 #include "common.h"
+
+void WaitManager::wait(WaitInfo* info)
+{
+    static_cast<TaskInfo*>(info)->changeStatus(TaskStatus::WAITING, waitList);
+}
 
 void WaitManager::sleep(WaitInfo* info, long jiffies)
 {
     JiffiesSegmentation curJiffies(scheduleManager.curJiffies());
-    JiffiesSegmentation wakeupJiffies(jiffies + curJiffies.jiffies);
+    info->wakeupJiffies = jiffies + curJiffies.jiffies;
+    JiffiesSegmentation wakeupJiffies(info->wakeupJiffies);
 
     assert(wakeupJiffies.jiffies != curJiffies.jiffies);
 
     //should be inserted to wheels[wait::WHEEL_SIZE - 1]
     if (jiffies < 0)
     {
-        sleepWheels[wait::WHEEL_SIZE - 1].push(info, wakeupJiffies.segmentation[wait::WHEEL_SIZE - 1]);
+        TaskStatusList& list = sleepWheels[wait::WHEEL_SIZE - 1].dial(wakeupJiffies.segmentation[wait::WHEEL_SIZE - 1]);
+        static_cast<TaskInfo*>(info)->changeStatus(TaskStatus::WAITING, list);
         return;
     }
 
@@ -28,7 +37,8 @@ void WaitManager::sleep(WaitInfo* info, long jiffies)
         }
     }
 
-    sleepWheels[i].push(info, wakeupJiffies.segmentation[i]);
+    TaskStatusList& list = sleepWheels[i].dial(wakeupJiffies.segmentation[i]);
+    static_cast<TaskInfo*>(info)->changeStatus(TaskStatus::WAITING, list);
 }
 
 void WaitManager::moveWheel(size_t level, JiffiesSegmentation curJiffies)
@@ -38,11 +48,12 @@ void WaitManager::moveWheel(size_t level, JiffiesSegmentation curJiffies)
     {
         if (curJiffies.segmentation[level] == 0)
             moveWheel(level + 1, curJiffies);
-        WaitInfo* info = sleepWheels[level].pop(curJiffies.segmentation[level]);
+        WaitInfo* info = static_cast<TaskInfo*>(sleepWheels[level].pop(curJiffies.segmentation[level]));
         while (info != nullptr)
         {
-            sleepWheels[level - 1].push(info, curJiffies.segmentation[level - 1]);
-            info = sleepWheels[level].pop(curJiffies.segmentation[level]);
+            JiffiesSegmentation infoJiffies(info->wakeupJiffies);
+            sleepWheels[level - 1].push(static_cast<TaskInfo*>(info), infoJiffies.segmentation[level - 1]);
+            info = static_cast<TaskInfo*>(sleepWheels[level].pop(curJiffies.segmentation[level]));
         }
     }
 }
@@ -54,10 +65,10 @@ void WaitManager::wakeup()
     if (curJiffies.segmentation[0] == 0)
         moveWheel(1, curJiffies);
 
-    WaitInfo* info = sleepWheels[0].begin(curJiffies.segmentation[0]);
+    WaitInfo* info = static_cast<TaskInfo*>(sleepWheels[0].begin(curJiffies.segmentation[0]));
     while (info != nullptr)
     {
         info->wakeup(WakeupRet::TIMEOUT);
-        info = sleepWheels[0].begin(curJiffies.segmentation[0]);
+        info = static_cast<TaskInfo*>(sleepWheels[0].begin(curJiffies.segmentation[0]));
     }
 }

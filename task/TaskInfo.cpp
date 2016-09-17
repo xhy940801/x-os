@@ -9,7 +9,7 @@ TaskInfo::TaskInfo(uint32_t* _catalog, uintptr_t _catalogTableP)
 }
 
 TaskInfo::TaskInfo(uint32_t* _catalog, uintptr_t _catalogTableP, unsigned long options, const TaskInfo& taskInfo)
-    : ScheduleInfo(options, taskInfo), AuthInfo(options, taskInfo), WaitInfo(options, taskInfo),
+    : TaskStatusInfo(options, taskInfo), ScheduleInfo(options, taskInfo), AuthInfo(options, taskInfo), WaitInfo(options, taskInfo),
     cpuState(_catalogTableP, options, taskInfo.cpuState), catalog(_catalog)
 {
     memcpy(catalog, taskInfo.catalog, mem::PAGESIZE);

@@ -5,6 +5,8 @@
 #include "sched/ScheduleQueue.h"
 #include "sched/ScheduleInfo.h"
 
+#include "task/TaskStatus.h"
+
 class ScheduleManager
 {
     ScheduleQueue queue[2];
@@ -18,29 +20,8 @@ public:
 
     void schedule(bool passive = false);
 
-    void putInQueue(ScheduleInfo* info)
-    {
-        if (info->restTime == 0)
-        {
-            info->resetRestTime();
-            if (info->scheduleLoop == scheduleLoop)
-                expire->push(info);
-            else
-                active->push(info);
-        }
-        else
-            active->push(info);
-        info->state = ScheduleInfoState::RUNNING;
-    }
-
-    void takeOutQueue(ScheduleInfo* info, ScheduleInfoState state)
-    {
-        assert(state != ScheduleInfoState::RUNNING);
-        info->outQueue();
-        info->state = state;
-        info->scheduleLoop = scheduleLoop;
-    }
-
+    void putInQueue(ScheduleInfo* info);
+    
     long curJiffies()
     {
         return jiffies;
