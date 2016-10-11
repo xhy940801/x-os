@@ -37,10 +37,12 @@ WakeupRet Semaphore::down(size_t demand)
     info->wait();
     scheduleManager.schedule();
 
-    info->MultiProcInfo::removeSelf();
     WakeupRet ret = info->wakeupRet();
     if (ret != WakeupRet::NORMAL)
+    {
+        info->MultiProcInfo::removeSelf();
         return ret;
+    }
 
     assert(resource >= demand);
     resource -= demand;
@@ -66,10 +68,12 @@ WakeupRet Semaphore::down(size_t demand, long timeout)
     info->sleep(timeout);
     scheduleManager.schedule();
 
-    info->MultiProcInfo::removeSelf();
     WakeupRet ret = info->wakeupRet();
     if (ret != WakeupRet::NORMAL)
+    {
+        info->MultiProcInfo::removeSelf();
         return ret;
+    }
 
     assert(resource >= demand);
     resource -= demand;
@@ -79,14 +83,19 @@ WakeupRet Semaphore::down(size_t demand, long timeout)
 
 void Semaphore::up(size_t num)
 {
+    auto locker(taskManager.curtask()->getLocker());
+
     assert(num > 0);
     resource += num;
     size_t allDemand = 0;
-    for (auto it = list.begin(); it != list.end(); ++it)
+    while (!list.empty())
     {
+        auto it = list.begin();
         allDemand += it->demand;
         if (resource < allDemand)
             break;
-        static_cast<TaskInfo*>(&it.val())->wakeup(WakeupRet::NORMAL);
+        TaskInfo* next = static_cast<TaskInfo*>(&it.val());
+        next->wakeup(WakeupRet::NORMAL);
+        next->MultiProcInfo::removeSelf();
     }
 }

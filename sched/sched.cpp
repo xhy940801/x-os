@@ -4,6 +4,7 @@
 
 #include "asm.h"
 #include "interrupt.h"
+#include "wait.h"
 
 #include <new>
 
@@ -40,8 +41,9 @@ void doTimer()
     _outb(0x20, 0x20);
 
     scheduleManager.addJiffies();
-
     scheduleManager.schedule(true);
+
+    waitManager.wakeup();
 
     current->vUnlock();
 }

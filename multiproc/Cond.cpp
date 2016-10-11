@@ -1,36 +1,20 @@
-#include "multiproc/Mutex.h"
+#include "multiproc/Cond.h"
 
 #include "multiproc/MultiProcInfo.h"
 
 #include "task.h"
-#include "wait.h"
 #include "sched.h"
 
-bool Mutex::tryLock()
+WakeupRet Cond::wait()
 {
     TaskInfo* info = taskManager.curtask();
     auto locker(info->getLocker());
 
-    if(!list.empty())
-        return false;
-
     list.pushBack(*info);
-    return true;
-}
-
-WakeupRet Mutex::lock()
-{
-    TaskInfo* info = taskManager.curtask();
-    auto locker(info->getLocker());
-
-    bool empty = list.empty();
-    list.pushBack(*info);
-
-    if (empty)
-        return WakeupRet::NORMAL;
 
     info->wait();
     scheduleManager.schedule();
+
     WakeupRet ret = info->wakeupRet();
     if (ret != WakeupRet::NORMAL)
     {
@@ -41,19 +25,16 @@ WakeupRet Mutex::lock()
     return ret;
 }
 
-WakeupRet Mutex::lock(long timeout)
+WakeupRet Cond::wait(long timeout)
 {
     TaskInfo* info = taskManager.curtask();
     auto locker(info->getLocker());
 
-    bool empty = list.empty();
     list.pushBack(*info);
-
-    if (empty)
-        return WakeupRet::NORMAL;
 
     info->sleep(timeout);
     scheduleManager.schedule();
+    
     WakeupRet ret = info->wakeupRet();
     if (ret != WakeupRet::NORMAL)
     {
@@ -64,15 +45,23 @@ WakeupRet Mutex::lock(long timeout)
     return ret;
 }
 
-void Mutex::unlock()
+void Cond::signal()
 {
-    TaskInfo* info = taskManager.curtask();
-    auto locker(info->getLocker());
+    auto locker(taskManager.curtask()->getLocker());
 
-    assert(&list.begin().val() == info);
-    info->MultiProcInfo::removeSelf();
+    if (list.empty())
+        return;
 
-    if (!list.empty())
+    TaskInfo* next = static_cast<TaskInfo*>(&list.begin().val());
+    next->wakeup(WakeupRet::NORMAL);
+    next->MultiProcInfo::removeSelf();
+}
+
+void Cond::broadcast()
+{
+    auto locker(taskManager.curtask()->getLocker());
+
+    while (!list.empty())
     {
         TaskInfo* next = static_cast<TaskInfo*>(&list.begin().val());
         next->wakeup(WakeupRet::NORMAL);

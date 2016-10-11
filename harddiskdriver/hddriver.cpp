@@ -5,6 +5,7 @@
 #include "harddiskdriver/RealHardDiskDriver.h"
 
 #include "interrupt.h"
+#include "task.h"
 
 RealHardDiskDriver hddriver0(0, 0);
 
@@ -24,7 +25,15 @@ void initHardDiskDriverModule()
 
 void doHDInterrupt()
 {
-    hddriver0.doIRQ();
+    TaskInfo* current = taskManager.curtask();
+    current->vLock();
+
+    _outb(0xa0, 0x20);
+    _outb(0x20, 0x20);
+
+    hddriver0.doIRQ();    
+
+    current->vUnlock();
 }
 
 HardDiskDriver* getHD(size_t i)

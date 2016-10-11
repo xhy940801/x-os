@@ -50,6 +50,12 @@ public:
         length = len;
     }
 
+    void setSuccessResult()
+    {
+        startLBA = length * (mem::PAGESIZE / 512);
+        length = 0;
+    }
+
     size_t lba() const
     {
         return startLBA;

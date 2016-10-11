@@ -65,9 +65,10 @@ void TaskManager::switchTask(TaskInfo* target)
 int TaskManager::fork(unsigned long options)
 {
     int ret = 0;
-    uintptr_t esp;
+    uintptr_t esp, ebp;
     _lesp(esp);
-    TaskInfo* task = TaskManagerHelper::makeTaskAndSetRet(esp, ret, reinterpret_cast<uintptr_t>(&&schedule_ret_label));
+    _lebp(ebp);
+    TaskInfo* task = TaskManagerHelper::makeTaskAndSetRet(esp, ebp, ret, reinterpret_cast<uintptr_t>(&&schedule_ret_label));
     switchTask(task);
     _memorybar();
     if (ret != 0)

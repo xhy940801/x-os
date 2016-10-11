@@ -344,6 +344,9 @@ int RealHardDiskDriver::writeOnDMAModeImmediately(size_t lba, char* buffers[], u
 void RealHardDiskDriver::processOneOperation()
 {
     HardDiskOperationInfo& info = elevator.top();
+
+    assert(info.count() <= 32 && info.count() > 0);
+
     for (size_t i = 0; i < info.count(); ++i)
     {
         bmr.prdt[i].physicalAddress = info.physicalAddr(i);
@@ -356,7 +359,7 @@ void RealHardDiskDriver::processOneOperation()
     _outd(bmr.basePort + harddiskdriver::PORT_BMI_M_STATUS, 0x06);
 
     _outb(basePort + harddiskdriver::PORT_DRIVERSELECT, 0xe0 | slaveBit | ((info.lba() >> 24) & 0x0f));
-    _outb(basePort + harddiskdriver::PORT_SELECTORCOUNT, info.count() << 3);
+    _outb(basePort + harddiskdriver::PORT_SELECTORCOUNT, info.count() * (mem::PAGESIZE / 512));
     _outb(basePort + harddiskdriver::PORT_LBALO, info.lba() & 0xff);
     _outb(basePort + harddiskdriver::PORT_LBAMID, ((info.lba() >> 8) & 0xff));
     _outb(basePort + harddiskdriver::PORT_LBAHI, ((info.lba() >> 16) & 0xff));
@@ -440,11 +443,15 @@ void RealHardDiskDriver::doIRQ()
         info.setResult(lba, info.count() - count);
     }
 
+    info.setSuccessResult();
     elevator.pop();
     info.task()->wakeup(WakeupRet::NORMAL);
     freeList.pushFront(info);
     if (!elevator.empty())
         processOneOperation();
+
+    //stop dma
+    _outb(bmr.basePort + harddiskdriver::PORT_BMI_M_COMMAND, 0x00);
 }
 
 HardDiskDriver* RealHardDiskDriver::getPartition(size_t i)

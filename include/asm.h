@@ -27,6 +27,7 @@
 #define _frstor(ptr) __asm__("frstor (%0)"::"g"(ptr))
 
 #define _lesp(ptr) __asm__("mov %%esp, %0":"=g"(ptr))
+#define _lebp(ptr) __asm__("mov %%ebp, %0":"=g"(ptr))
 
 #define _memorybar() __asm__ volatile("":::"memory")
 
