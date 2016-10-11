@@ -16,8 +16,14 @@ protected:
 
 public:
     void wait();
+    void uninterruptableWait();
     void sleep(long jiffies);
     void wakeup(WakeupRet _ret);
+
+    WakeupRet wakeupRet() const
+    {
+        return ret;
+    }
 
     WaitInfo(unsigned long options, const WaitInfo& info) : wakeupJiffies(info.wakeupJiffies), ret(info.ret) {}
 

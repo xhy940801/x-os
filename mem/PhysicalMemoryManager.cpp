@@ -43,3 +43,17 @@ PhysicalPageInfo* PhysicalMemoryManager::getOnePageUnblock()
     _fmemoryhead = _fmemoryhead->_next;
     return rs;
 }
+
+
+//TODO
+size_t PhysicalMemoryManager::freePageCount()
+{
+    size_t count = 0;
+    PhysicalPageInfo* start = _fmemoryhead;
+    while (start != nullptr)
+    {
+        ++count;
+        start = start->_next;
+    }
+    return count;
+}

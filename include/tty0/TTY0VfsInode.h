@@ -48,6 +48,6 @@ public:
         static_assert(sizeof(_addr[0]) == 2, "sizeof(TTY0Character) must equal to 2");
     }
 
-    ssize_t write(const uint8_t* buf, size_t len, FdInfo* info);
-    void close();
+    virtual ssize_t write(const uint8_t* buf, size_t len, FdInfo* info) override;
+    virtual void close() override;
 };

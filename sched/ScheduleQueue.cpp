@@ -12,7 +12,7 @@ ScheduleInfo* ScheduleQueue::pop()
     {
         if (!empty(i))
         {
-            TaskInfo* node = static_cast<TaskInfo*>(levels[i].begin());
+            TaskInfo* node = static_cast<TaskInfo*>(&levels[i].begin().val());
             node->TaskStatusInfo::removeSelf();
             return node;
         }

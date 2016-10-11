@@ -7,7 +7,7 @@
 
 enum class TaskStatus : uint16_t
 {
-    RUNNING, WAITING
+    RUNNING, WAITING, UNINTERRUPTIBLE_WAITING
 };
 
 class TaskStatusInfo;

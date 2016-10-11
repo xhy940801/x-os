@@ -41,6 +41,11 @@ void WaitManager::sleep(WaitInfo* info, long jiffies)
     static_cast<TaskInfo*>(info)->changeStatus(TaskStatus::WAITING, list);
 }
 
+void WaitManager::uninterruptableWait(WaitInfo* info)
+{
+    static_cast<TaskInfo*>(info)->changeStatus(TaskStatus::UNINTERRUPTIBLE_WAITING, waitList);
+}
+
 void WaitManager::moveWheel(size_t level, JiffiesSegmentation curJiffies)
 {
     assert(level > 0);

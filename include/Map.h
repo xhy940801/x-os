@@ -96,7 +96,7 @@ public:
         friend bool operator != (const Iterator& it1, const Iterator& it2)
         {
             return !RBTree::IteratorBase::equal(it1, it2);
-        }
+        };
     };
 
 public:

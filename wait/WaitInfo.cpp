@@ -9,6 +9,11 @@ void WaitInfo::wait()
     waitManager.wait(this);
 }
 
+void WaitInfo::uninterruptableWait()
+{
+    waitManager.uninterruptableWait(this);
+}
+
 void WaitInfo::sleep(long jiffies)
 {
     waitManager.sleep(this, jiffies);

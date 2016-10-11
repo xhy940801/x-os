@@ -19,6 +19,12 @@ static inline void unmapKernelMemory(uint32_t dst)
     pagetable[(dst - mem::KMEMSTART) >> 12] = 0;
 }
 
+static inline uint32_t getPhysicalAddrFromVirtualAddr(uint32_t dst)
+{
+    uint32_t* page_table = (uint32_t*) (mem::KMEMSTART);
+    return page_table[(dst - mem::KMEMSTART) >> 12] & 0xfffff000;
+}
+
 void SystemMemoryManager::init()
 {
     _begin.used = reinterpret_cast<uint8_t*>(physicalMemoryManager.endpos());
@@ -65,10 +71,28 @@ void* SystemMemoryManager::getPersistePages(size_t num)
     return _usedEnd;
 }
 
+void* SystemMemoryManager::getOnePersistePage(uintptr_t& physicalAddr)
+{
+    _usedEnd -= mem::PAGESIZE;
+    PhysicalPageInfo* info = physicalMemoryManager.getOnePageUnblock();
+    assert(info != nullptr);
+    physicalAddr = physicalMemoryManager.getPhysicalAddress(info);
+    mapKernelMemory(
+        reinterpret_cast<uint32_t>(_usedEnd),
+        physicalAddr,
+        3
+    );
+    return _usedEnd;
+}
+
 void* SystemMemoryManager::allocPages(size_t level)
 {
     void* p = buddyManager.getAddress(level);
     size_t pcount = 1 << level;
+
+    if (sem.down(pcount) != WakeupRet::NORMAL)
+        return nullptr;
+
     uintptr_t cp = reinterpret_cast<uintptr_t>(p);
     for (size_t i = 0; i < pcount; ++i)
     {
@@ -82,6 +106,9 @@ void* SystemMemoryManager::allocPages(size_t level)
 
 void* SystemMemoryManager::allocOnePage(uintptr_t& physicalAddr)
 {
+    if (sem.down(1) != WakeupRet::NORMAL)
+        return nullptr;
+
     void* p = buddyManager.getAddress(0);
     PhysicalPageInfo* info = physicalMemoryManager.getOnePageUnblock();
     physicalAddr = physicalMemoryManager.getPhysicalAddress(info);
@@ -93,4 +120,15 @@ void* SystemMemoryManager::allocOnePage(uintptr_t& physicalAddr)
 void SystemMemoryManager::freePages(void* page, size_t level)
 {
 
+}
+
+void SystemMemoryManager::resetSemaphore()
+{
+    sem.up(physicalMemoryManager.freePageCount());
+    printk("freePageCount %u\n", sem.resourceCount());
+}
+
+uintptr_t SystemMemoryManager::getPhysicalAddr(const void* ptr)
+{
+    return getPhysicalAddrFromVirtualAddr(reinterpret_cast<uint32_t>(ptr));
 }

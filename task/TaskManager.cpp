@@ -11,7 +11,7 @@
 
 extern "C"
 {
-    void _task_swapesp(uintptr_t dst, uintptr_t* src);
+    void _task_swapesp(uintptr_t esp_dst, uintptr_t* esp_src, uintptr_t ebp_dst, uintptr_t* ebp_src);
 }
 
 char process1page[2 * mem::PAGESIZE];
@@ -54,7 +54,7 @@ void TaskManager::switchTask(TaskInfo* target)
     assert(target != current);
     storeCpuState();
     std::swap(current, target);
-    _task_swapesp(current->esp, &target->esp);
+    _task_swapesp(current->esp, &target->esp, current->ebp, &target->ebp);
     _memorybar();
     reloadCpuState();
 }

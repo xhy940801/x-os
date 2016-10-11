@@ -1,6 +1,5 @@
 #pragma once
 
-#include "wait/WaitInfo.h"
 #include "wait/WaitManager.h"
 #include "wait/WakeupRet.h"
 

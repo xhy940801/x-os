@@ -27,6 +27,8 @@ private:
 
     void sleep(WaitInfo* info, long jiffies);
 
+    void uninterruptableWait(WaitInfo* info);
+
     friend class WaitInfo;
 
     void moveWheel(size_t level, JiffiesSegmentation curJiffies);

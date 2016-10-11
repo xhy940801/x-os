@@ -16,4 +16,9 @@ public:
     AuthInfo(AuthInfo&&) = delete;
     AuthInfo& operator = (const AuthInfo&) = delete;
     AuthInfo& operator = (AuthInfo&&) = delete;
+
+    pid_t processID() const
+    {
+        return pid;
+    }
 };

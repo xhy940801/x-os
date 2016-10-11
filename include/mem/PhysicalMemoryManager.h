@@ -15,4 +15,5 @@ public:
     {
         return (pageinfo - _memoryhead) * mem::PAGESIZE;
     }
+    size_t freePageCount();
 };
